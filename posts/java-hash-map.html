@@ -1,0 +1,816 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charSet="utf-8"/><meta name="viewport" content="initial-scale=1.0, width=device-width"/><meta name="baidu-site-verification" content="cbUbgjjdru"/><meta name="generator" content="Next.js"/><link href="https://fonts.googleapis.com/css?family=Chelsea+Market:400" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500&amp;display=swap" rel="stylesheet"/><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/><script src="https://cdn.bootcdn.net/ajax/libs/react/16.13.1/umd/react.production.min.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/react-dom/16.13.1/umd/react-dom.production.min.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.0.3/highlight.min.js"></script><script src="/_.v1.js"></script><meta name="viewport" content="width=device-width"/><meta charSet="utf-8"/><title>HashMap原理简析 - kiyak</title><link rel="preload" href="/_next/static/css/7af46002.794d2e46.chunk.css" as="style"/><link rel="stylesheet" href="/_next/static/css/7af46002.794d2e46.chunk.css" data-n-g=""/><link rel="preload" href="/_next/static/css/189f372a1a09b44bc5ee9e8694cd22967121ee9f_CSS.48deeafe.chunk.css" as="style"/><link rel="stylesheet" href="/_next/static/css/189f372a1a09b44bc5ee9e8694cd22967121ee9f_CSS.48deeafe.chunk.css" data-n-g=""/><link rel="preload" href="/_next/static/css/712a84a73acf62bf26290958298b2566586e7dd8_CSS.77aeb35e.chunk.css" as="style"/><link rel="stylesheet" href="/_next/static/css/712a84a73acf62bf26290958298b2566586e7dd8_CSS.77aeb35e.chunk.css" data-n-g=""/><link rel="preload" href="/_next/static/css/93b2fd6e127d30331b61cfd2f04634ca05024a66_CSS.c9bcc403.chunk.css" as="style"/><link rel="stylesheet" href="/_next/static/css/93b2fd6e127d30331b61cfd2f04634ca05024a66_CSS.c9bcc403.chunk.css" data-n-g=""/><link rel="preload" href="/_next/static/css/styles.a71acdf5.chunk.css" as="style"/><link rel="stylesheet" href="/_next/static/css/styles.a71acdf5.chunk.css" data-n-g=""/><link rel="preload" href="/_next/static/css/8a4b9c7b11a9228b425c7a73cade1154f2ca061e_CSS.0b204744.chunk.css" as="style"/><link rel="stylesheet" href="/_next/static/css/8a4b9c7b11a9228b425c7a73cade1154f2ca061e_CSS.0b204744.chunk.css" data-n-p=""/><noscript data-n-css="true"></noscript><link rel="preload" href="/_next/static/chunks/main-9e14e9299d96e4a63fc3.js" as="script"/><link rel="preload" href="/_next/static/chunks/webpack-d7b2fb72fb7257504a38.js" as="script"/><link rel="preload" href="/_next/static/chunks/7af46002.7b37a38a8911fc5fb44b.js" as="script"/><link rel="preload" href="/_next/static/chunks/7658eb265201359a3f9e5f36a5d51cd74c781bde.716fe7386381de1064b0.js" as="script"/><link rel="preload" href="/_next/static/chunks/189f372a1a09b44bc5ee9e8694cd22967121ee9f.c1299753f6cf9d140411.js" as="script"/><link rel="preload" href="/_next/static/chunks/189f372a1a09b44bc5ee9e8694cd22967121ee9f_CSS.8f6f5b95f5e92b2c9bcd.js" as="script"/><link rel="preload" href="/_next/static/chunks/712a84a73acf62bf26290958298b2566586e7dd8_CSS.bca366718f045dbe8189.js" as="script"/><link rel="preload" href="/_next/static/chunks/93b2fd6e127d30331b61cfd2f04634ca05024a66_CSS.19830e50427f38e47434.js" as="script"/><link rel="preload" href="/_next/static/chunks/608d37238a334f4b11fe8d600201fe11b7a5b804.cbf6dda1e316f22fd86b.js" as="script"/><link rel="preload" href="/_next/static/chunks/d111f78934af154ae2b78def2cd48076645f6685.b41fcd8fbee89b9b32b6.js" as="script"/><link rel="preload" href="/_next/static/chunks/e70a2e0268e458e8b9abc18785a5727107407f8e.3f5af21948b0ca66102f.js" as="script"/><link rel="preload" href="/_next/static/chunks/styles.97cfe1edb1cdc49560a5.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/_app-307ac3bfcacd4d7be388.js" as="script"/><link rel="preload" href="/_next/static/chunks/8a4b9c7b11a9228b425c7a73cade1154f2ca061e.4a1b4be1a94f0b02499c.js" as="script"/><link rel="preload" href="/_next/static/chunks/8a4b9c7b11a9228b425c7a73cade1154f2ca061e_CSS.4d62413f4da81be1e932.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/posts/%5Bid%5D-c6ffa8c08f20ac6ea580.js" as="script"/></head><body><div id="__next"><div><section class="ant-layout"><header class="ant-layout-header ki-header"><div class="ant-row ant-row-center ant-row-middle" style="height:100%"><div class="title-panel"><a class="header-title" href="/">· KIYAK ·</a></div></div></header><main class="ant-layout-content" style="margin-top:50px;padding-left:2px;padding-right:2px;padding-top:2px"><div style="overflow:hidden"><div id="posts-panel"><div class="ant-row ant-row-center"><div class="ant-col ant-col-xs-24 ant-col-sm-24 ant-col-md-18 ant-col-lg-13"><div id="posts-content"><h1>HashMap原理简析</h1>
+<h2>概述</h2>
+<blockquote>
+<p><a href="https://baike.baidu.com/item/%E6%95%A3%E5%88%97%E8%A1%A8/10027933">散列表</a>（Hash table，也叫哈希表），是根据关键码值(Key value)而直接进行访问的<a href="https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/1450">数据结构</a>。也就是说，它通过把关键码值映射到表中一个位置来访问记录，以加快查找的速度。这个映射函数叫做<a href="https://baike.baidu.com/item/%E6%95%A3%E5%88%97%E5%87%BD%E6%95%B0/2366288">散列函数</a>，存放记录的<a href="https://baike.baidu.com/item/%E6%95%B0%E7%BB%84/3794097">数组</a>叫做<a href="https://baike.baidu.com/item/%E6%95%A3%E5%88%97%E8%A1%A8/10027933">散列表</a>。</p>
+</blockquote>
+<p><strong>HashMap</strong> 是 Java 项目开发者使用频率最高的工具类之一，它内部维护了一个哈希表，用于映射(键值对)处理的数据类型，可以说 HashMap 在项目代码中几乎随处可见。</p>
+<h2>要点</h2>
+<p>官方<a href="https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html">文档</a>里已经对 HashMap 进行了描述，大致有下列 5 个要点：</p>
+<ol>
+<li>允许 <code>null</code> 值与 <code>null</code> key</li>
+<li>无法保证顺序</li>
+<li>影响性能的两个因素：<em>capacity</em> 和 <em>load factor</em></li>
+<li>不保证线程同步</li>
+<li>具备 <em>fail-fast</em> 保护机制</li>
+</ol>
+<p><em>capacity</em> 指的是哈希表的容量， <em>load factor</em> 指的是哈希表的负载因子，关于这两个变量的关系，官方的描述是：</p>
+<blockquote>
+<p>The <em>load factor</em> is a measure of how full the hash table is allowed to get before its capacity is automatically increased. When the number of entries in the hash table exceeds the product of the load factor and the current capacity, the hash table is <strong><em>rehashed</em></strong> (that is, internal data structures are rebuilt) so that the hash table has approximately twice the number of buckets.</p>
+</blockquote>
+<blockquote>
+<p>As a general rule, the default load factor (.75) offers a good tradeoff between time and space costs. Higher values decrease the space overhead but increase the lookup cost (reflected in most of the operations of the <code>HashMap</code> class, including <code>get</code> and <code>put</code>). The expected number of entries in the map and its load factor should be taken into account when setting its initial capacity,</p>
+</blockquote>
+<p>简而言之：</p>
+<ul>
+<li>只要满足条件 <code>总数据量 > load factor * current capacity</code>，HashMap 内部的哈希表就会被重构 (简称 rehash)，哈希表容量扩大至原来的 2 倍。</li>
+<li>为避免哈希表 rehash 带来的性能损耗，建议考虑初始容量大小 <em>initial capacity</em>。</li>
+<li><em>load factor</em> 默认值是 0.75，该值的定义权衡了时间与空间的成本，设置太高或者太低都会导致性能失衡。</li>
+</ul>
+<h2>初始化</h2>
+<p>HashMap 提供四个构造函数。</p>
+<pre><code class="language-java">public HashMap() // 默认
+public HashMap(int initialCapacity) // 指定初始化容量
+public HashMap(int initialCapacity, float loadFactor) // 指定初始化容量、负载因子
+public HashMap(Map&#x3C;? extends K, ? extends V> m) // 初始化并且复制另外一个 Map
+</code></pre>
+<p>如果未指定 <code>initialCapacity</code>，那么 (初始) 哈希表容量默认是 <strong>16</strong>，如果未指定 <code>loadFactor</code>，那么负载因子默认是 <strong>0.75</strong>。正常情况下，开发人员无需改动 <code>loadFactor</code> 数值。</p>
+<pre><code class="language-java">static final int DEFAULT_INITIAL_CAPACITY = 1 &#x3C;&#x3C; 4; // aka 16
+static final float DEFAULT_LOAD_FACTOR = 0.75f;
+</code></pre>
+<p>根据 HashMap 的文档所述，可通过预估需要存储的数据量，来避免不必要的 rehash。<a href="https://github.com/alibaba/p3c">阿里巴巴Java开发手册</a>也针对这种情况进行了描述：</p>
+<blockquote>
+<p>说明：HashMap 使用 HashMap(int initialCapacity) 初始化，如果暂时无法确定集合大小，那么指定默认值（16）即可。<br>
+正例：initialCapacity = (需要存储的元素个数 / 负载因子) + 1。注意负载因子（即 loader factor）默认为 0.75，如果暂时无法确定初始值大小，请设置为 16（即默认值）。<br>
+反例：HashMap 需要放置 1024 个元素，由于没有设置容量初始大小，随着元素不断增加，容量 7 次被迫扩大，resize 需要重建 hash 表。当放置的集合元素个数达千万级别时，不断扩容会严重影响性能。</p>
+</blockquote>
+<p>类似的，Google 出品的 Guava 库也针对 HashMap 的初始化进行了封装：</p>
+<pre><code class="language-java">public static &#x3C;K, V> HashMap&#x3C;K, V> newHashMapWithExpectedSize(int expectedSize) {
+    return new HashMap(capacity(expectedSize));
+}
+
+static int capacity(int expectedSize) {
+    if (expectedSize &#x3C; 3) {
+        CollectPreconditions.checkNonnegative(expectedSize, "expectedSize");
+        return expectedSize + 1;
+    } else {
+        return expectedSize &#x3C; 1073741824 ? (int)((float)expectedSize / 0.75F + 1.0F) : 2147483647;
+    }
+}
+</code></pre>
+<p>无一例外，它们都使用 <code>((float) expectedSize / loadFactor) + 1.0F</code> 作为 HashMap 的入参。因此在开发过程中，如果知道需要存储的数据量较大，可以采用这些方式进行初始化，提高系统运行的效率。</p>
+<h2>存数据(put)</h2>
+<p>在执行一行 <code>map.put("one", "")</code>代码大概发生了什么？</p>
+<hr>
+<ol>
+<li>根据字符串 <em>one</em> 的 <em>hashCode()</em> 做一次 <em>hash</em> 计算</li>
+<li>判断哈希表是否初始化。否，则进行初始化 <code>resize</code></li>
+<li>根据 <em>hash</em> 计算 <em>one</em> 在哈希表的实际位置 <em>index</em></li>
+<li>判断所处位置是否有数据 (哈希碰撞)<ul>
+<li>有且等于 <em>one</em> ，把旧数据覆盖掉</li>
+<li>有且不等于 <em>one</em><ul>
+<li>在当前位置以链表方式追加。如果链表长度大于等于 7，链表重构为红黑树<br>
+如果追加过程发现相同数据  <em>one</em>，覆盖旧数据</li>
+</ul></li>
+<li>无，直接存入哈希表</li>
+</ul></li>
+<li>如果当前满足 <code>总数据量 > load factor * current capacity</code>，则数据结构重构 <code>resize</code></li>
+</ol>
+<hr>
+<p>以上流程可直接进入 <strong>java.util.HashMap#put</strong> 方法一探究竟。</p>
+<h2>哈希表的容量(2^n)</h2>
+<p>无论是哈希表默认大小、指定初始大小、扩容大小，结果都将是 <strong>2的幂</strong>（2的n次方）。</p>
+<p>如果指定 <code>initialCapacity</code>，那么 <code>initialCapacity</code> 就会被 <strong>java.util.HashMap#tableSizeFor</strong> 方法处理。</p>
+<pre><code class="language-java">public HashMap(int initialCapacity)
+                          |
+                          |_______
+                                  |
+static final int tableSizeFor(int cap)
+</code></pre>
+<pre><code class="language-java">/**
+* Returns a power of two size for the given target capacity.
+*/
+static final int tableSizeFor(int cap) {
+    int n = cap - 1;
+    n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
+    return (n &#x3C; 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+}
+</code></pre>
+<p>假设指定 <code>initialCapacity = 7</code>，那么根据代码逻辑可推演出以下内容：</p>
+<pre><code class="language-markdown">cap = 7
+n = cap - 1 = 6 = 0 1 1 0
+n |= n >>> 1;    0 1 1 0 | 0 0 1 1 = 0 1 1 1 = 7
+n |= n >>> 2;    0 1 1 1 | 0 0 0 1 = 0 1 1 1 = 7
+n |= n >>> 4;    0 1 1 1 | 0 0 0 0 = 0 1 1 1 = 7
+n |= n >>> 8;    0 1 1 1 | 0 0 0 0 = 0 1 1 1 = 7
+n |= n >>> 16;   0 1 1 1 | 0 0 0 0 = 0 1 1 1 = 7
+return n + 1     7 + 1 = 8 
+</code></pre>
+<p>所以计算出的哈希表容量是 8 = 2^3，然后再根据<code>load factor * current capacity</code>计算出当前有效存储量为 6，并将 6 赋予给 HashMap 的实例变量 <code>threshold</code> 。</p>
+<pre><code class="language-java">int threshold;
+</code></pre>
+<p>而当哈希表的数据条数大于 6 将会发生 rehash。</p>
+<pre><code class="language-java">if (++size > threshold)
+    resize();
+</code></pre>
+<p>哈希表的扩容计算方式很简单：</p>
+<p> <code>newCap = oldCap &#x3C;&#x3C; 1</code>，<code>newThr = oldThr &#x3C;&#x3C; 1</code></p>
+<h2>计算位置(下标)</h2>
+<p>分为两步，首先计算一次 hash，利用 key 的 hashcode 高十六位和低十六位进行异或运算：</p>
+<pre><code class="language-java">static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+</code></pre>
+<p>然后是下标的计算，n 代表哈希表容量，将准备好的 hash 再次进行 <code>&#x26;</code> 运算， n-1 避免数组越界：</p>
+<pre><code class="language-java">i = (n - 1) &#x26; hash
+</code></pre>
+<p>假设哈希表容量为 8，并且存入一条数据： <code>map.put("abcabcabc", "")</code></p>
+<pre><code class="language-java">h = key.hashCode(): 0001 0010 0100 0011 1011 0011 1010 0010 // "abcabcabc".hashCode();
+                                      xor
+h >>> 16:           0000 0000 0000 0000 0001 0010 0100 0011
+                                      ↓↓↓
+hash = h ^ h>>>16:  0001 0010 0100 0011 1010 0001 1110 0001
+                                       &#x26;
+n - 1:              0000 0000 0000 0000 0000 0000 0000 0111
+                                      ↓↓↓
+(n - 1) &#x26; hash:     0000 0000 0000 0000 0000 0000 0000 0001 // index = 1
+</code></pre>
+<p>因此计算出 “abcabcabc” 这个 key 在哈希表的位置(下标)是 1 。</p>
+<p>关于 hash 函数的设计，代码注释的说法是：</p>
+<blockquote>
+<p>  Computes key.hashCode() and spreads (XORs) higher bits of hash to lower.  Because the table uses power-of-two masking, sets of hashes that vary only in bits above the current mask will always collide. (Among known examples are sets of Float keys holding consecutive whole numbers in small tables.)  So we apply a transform that spreads the impact of higher bits downward. There is a tradeoff between speed, utility, and quality of bit-spreading. Because many common sets of hashes are already reasonably distributed (so don't benefit from spreading), and because we use trees to handle large sets of collisions in bins, we just XOR some shifted bits in the cheapest possible way to reduce systematic lossage, as well as to incorporate impact of the highest bits that would otherwise never be used in index calculations because of table bounds.</p>
+</blockquote>
+<p>注释中说到，大多数的 hashCode 的分布已经非常合理了，如果还发生冲突就使用链表或者树结构解决，因此设计者使用最节省系统性能开销的移位以及异或运算来避免更多的冲突。</p>
+<p>使用 hash 函数，是因为要考虑到，如果使用的 hashCode 仅在高位不同，而低位相同，那么在极端情况下发生冲突概率将增大。</p>
+<p>例如：</p>
+<pre><code class="language-java">hashCode 1:         1100 0011 1000 0011 1000 1010 0001 0000
+hashCode 2:         0100 1011 0100 1100 1111 0110 1100 0000
+hashCode 3:         0000 0001 1001 1001 0110 1011 1110 0000
+                                       &#x26;
+n - 1:              0000 0000 0000 0000 0000 0000 0000 0111
+                                      ↓↓↓
+(n - 1) &#x26; hashCode: 0000 0000 0000 0000 0000 0000 0000 0111 // Index is always the same: 7
+</code></pre>
+<p>可以看到，如果三个 hashCode 的高位不同，而低 3 位完全相同(全为 0)，那  <code>(n -1) &#x26; hashCode</code> 运算的结果都相同 (7)，这种情况所有的数据都以链表或者树结构形式存在同一位置 (7)。如果发生更多冲突，时间复杂度从 O(1) 变为 O(n) 或者 O(log n)，性能就会有所降低。</p>
+<p>使用 XOR 的原因，是因为这样的运算可使得 1 和 0 具有 50% / 50% 的分布，相比于 <code>&#x26;</code> 和 <code>|</code> 的 25/75 和 75/25 更加平均、稳定。</p>
+<table>
+<thead>
+<tr>
+<th>XOR</th>
+<th>1</th>
+<th>0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>0</strong></td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>1 和 0 数量各占总数一半。</p>
+<table>
+<thead>
+<tr>
+<th>&#x26;</th>
+<th>1</th>
+<th>0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>0</strong></td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>1 和 0 数量各占总数 25% 和 75%。</p>
+<table>
+<thead>
+<tr>
+<th>|</th>
+<th>1</th>
+<th>0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>0</strong></td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>1 和 0 数量各占总数 75% 和 25%。</p>
+<h2>扩容(resize)</h2>
+<p>哈希表的初始化与扩容都使用同一套逻辑，即 <strong>java.util.HashMap#resize</strong> 方法。</p>
+<pre><code class="language-java">final Node&#x3C;K,V>[] resize()
+</code></pre>
+<blockquote>
+<p>Initializes or doubles table size.  If null, allocates in accord with initial capacity target held in field threshold. Otherwise, because we are using power-of-two expansion, the elements from each bin must either stay at same index, or move with a power of two offset in the new table.</p>
+</blockquote>
+<p>大致意思就是说，当超过限制的时候会 resize，然而又因为我们使用的是2次幂的扩展(指长度扩为原来2倍)，所以，元素的位置要么是在原位置，要么是在原位置再移动2次幂的位置。</p>
+<p><img src="https://resource.1024kb.top/image/code-sample/hashmap-resize.png" alt="git-rebase.gif"></p>
+<p>观察上图扩容后(8 -> 16)的数据分布，要么是改变了索引，要么是不变，改变的就是移动2次幂的位置(+8)。</p>
+<pre><code class="language-java">5 + 8 = 13
+    4 = 4
+0 + 8 = 8
+</code></pre>
+<p>再次扩容亦是如此，如 16 -> 32 ，那么改变的也是移动2次幂的位置(+16)。</p>
+<pre><code class="language-java">13 + 16 = 29
+4  + 16 = 20
+8  + 16 = 24
+</code></pre>
+<p>对于是否需要改变索引，只需要看看原来的 hash 值新增的那个 bit 是 1 还是 0 就好了，是 0 则无需改变位置。例如上图的 hash2，扩容后由 <code>100</code> 变为 <code>0100</code>，多出的一位数是 0，那么 0 和其它数字进行与运算都是 0。</p>
+<pre><code class="language-java">hash2:   100
+          &#x26;
+n = 8:   111 
+          ↓
+         100 = 4
+--------------------
+hash2:  0100
+          &#x26;
+n = 16: 1111
+          ↓
+        0100 = 4
+</code></pre>
+<h2>取数据(get)</h2>
+<p>在理解以上逻辑之后，get 就很简单了。大致思路如下：</p>
+<ol>
+<li>根据 key 的 hashCode 进行一次 hash</li>
+<li>利用 <code>(n - 1) &#x26; hash</code> 计算出实际位置(索引)</li>
+<li>如果根据索引直接匹配到，直接返回， O(1)</li>
+<li>如果根据索引未能匹配到<ul>
+<li>若为树，则使用查询树的操作，O(logn)</li>
+<li>若为链表，则循环链表查找，O(n)</li>
+</ul></li>
+</ol>
+<h2>测试</h2>
+<p>利用 benchmark 测试工具来测试 HashMap，在初始化指定容量与使用默认构造函数的性能区别。</p>
+<p>测试分为 5 个等级：</p>
+<ol>
+<li>添加不同的数据直到满足 16 条</li>
+<li>添加不同的数据直到满足 100 条</li>
+<li>添加不同的数据直到满足 1000 条</li>
+<li>添加不同的数据直到满足 10000 条</li>
+<li>添加不同的数据直到满足 100000 条</li>
+</ol>
+<p>使用默认构造函数：</p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Mode</th>
+<th>Cnt</th>
+<th>Score</th>
+<th>Error</th>
+<th>Units</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MapBenchmark.measure_level1</td>
+<td>thrpt</td>
+<td>5</td>
+<td>141991260.547 ±  419002.953</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+<tr>
+<td>MapBenchmark.measure_level2</td>
+<td>thrpt</td>
+<td>5</td>
+<td>66501311.793 ± 5285311.107</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+<tr>
+<td>MapBenchmark.measure_level3</td>
+<td>thrpt</td>
+<td>5</td>
+<td>70077920.597 ± 6574269.856</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+<tr>
+<td>MapBenchmark.measure_level4</td>
+<td>thrpt</td>
+<td>5</td>
+<td>58270016.113 ± 3106384.470</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+<tr>
+<td>MapBenchmark.measure_level5</td>
+<td>thrpt</td>
+<td>5</td>
+<td>25518813.878 ± 1097213.863</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+</tbody>
+</table>
+<p>使用初始化容量的构造函数，并且考虑实际数据量传入合理的参数：</p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Mode</th>
+<th>Cnt</th>
+<th>Score</th>
+<th>Error</th>
+<th>Units</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MapBenchmark.measure_level1</td>
+<td>thrpt</td>
+<td>5</td>
+<td>122338131.327 ±  9689798.828</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+<tr>
+<td>MapBenchmark.measure_level2</td>
+<td>thrpt</td>
+<td>5</td>
+<td>102039334.216 ±  2403155.914</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+<tr>
+<td>MapBenchmark.measure_level3</td>
+<td>thrpt</td>
+<td>5</td>
+<td>96752178.779 ±  4839327.658</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+<tr>
+<td>MapBenchmark.measure_level4</td>
+<td>thrpt</td>
+<td>5</td>
+<td>88239132.356 ±  9597356.077</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+<tr>
+<td>MapBenchmark.measure_level5</td>
+<td>thrpt</td>
+<td>5</td>
+<td>55940080.977 ± 13094145.548</td>
+<td></td>
+<td>ops/s</td>
+</tr>
+</tbody>
+</table>
+<p>关注 Score 的结果，它们都是 xxx ± xxx，Units 代表单位每秒多少次操作。</p>
+<p>可以看到无论哪种初始化操作，随着数据量增大，每秒操作次数都随之降低。而同样条件下，使用<strong>初始化容量的构造函数</strong>相比使用<strong>默认构造函数</strong>，前者性能更佳。</p>
+<h1>附录</h1>
+<p> benchmark 测试代码。</p>
+<pre><code class="language-java">@State(Scope.Thread)
+public class MapBenchmark {
+
+  String[] resource;
+
+  @Setup()
+  public void prepare() {
+      resource = new String[100000];
+      for (int i = 0; i &#x3C; resource.length; i++) {
+          resource[i] = String.valueOf(i);
+      }
+  }
+
+  private Map&#x3C;String, String> reps(int reps) {
+      // Map&#x3C;String, String> map = new HashMap&#x3C;>((int) ((float) reps / 0.75F + 1.0F)); // 使用初始化容量的构造函数
+      Map&#x3C;String, String> map = new HashMap&#x3C;>(); // 使用默认构造函数
+
+      for (int i = 0; i &#x3C; reps; i++) {
+          String test = resource[i];
+          map.put(test, test);
+      }
+      return map;
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(10)
+  public Map&#x3C;String, String> measure_level1() {
+      return reps(10);
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(100)
+  public Map&#x3C;String, String> measure_level2() {
+      return reps(100);
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(1000)
+  public Map&#x3C;String, String> measure_level3() {
+      return reps(1000);
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(10000)
+  public Map&#x3C;String, String> measure_level4() {
+      return reps(10_000);
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(100000)
+  public Map&#x3C;String, String> measure_level5() {
+      return reps(100_000);
+  }
+
+  public static void main(String[] args) throws RunnerException {
+      Options opt = new OptionsBuilder()
+              .include(MapBenchmark.class.getSimpleName())
+              .forks(1)
+              .build();
+      new Runner(opt).run();
+  }
+
+}
+</code></pre>
+<p>使用默认构造函数的测试结果。</p>
+<pre><code class="language-java"># JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53301:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level1
+
+# Run progress: 0.00% complete, ETA 00:08:20
+# Fork: 1 of 1
+# Warmup Iteration   1: 127001625.901 ops/s
+# Warmup Iteration   2: 141822524.390 ops/s
+# Warmup Iteration   3: 133428241.333 ops/s
+# Warmup Iteration   4: 132244469.411 ops/s
+# Warmup Iteration   5: 138276778.513 ops/s
+Iteration   1: 141895511.199 ops/s
+Iteration   2: 141923059.081 ops/s
+Iteration   3: 142158823.597 ops/s
+Iteration   4: 141937212.493 ops/s
+Iteration   5: 142041696.363 ops/s
+
+
+Result "tester.MapBenchmark.measure_level1":
+  141991260.547 ±(99.9%) 419002.953 ops/s [Average]
+  (min, avg, max) = (141895511.199, 141991260.547, 142158823.597), stdev = 108813.736
+  CI (99.9%): [141572257.593, 142410263.500] (assumes normal distribution)
+
+
+# JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53301:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level2
+
+# Run progress: 20.00% complete, ETA 00:06:43
+# Fork: 1 of 1
+# Warmup Iteration   1: 66265103.610 ops/s
+# Warmup Iteration   2: 66389800.461 ops/s
+# Warmup Iteration   3: 67855747.609 ops/s
+# Warmup Iteration   4: 67289955.476 ops/s
+# Warmup Iteration   5: 67750553.602 ops/s
+Iteration   1: 67298893.171 ops/s
+Iteration   2: 66615628.545 ops/s
+Iteration   3: 64314592.829 ops/s
+Iteration   4: 66334869.364 ops/s
+Iteration   5: 67942575.053 ops/s
+
+
+Result "tester.MapBenchmark.measure_level2":
+  66501311.793 ±(99.9%) 5285311.107 ops/s [Average]
+  (min, avg, max) = (64314592.829, 66501311.793, 67942575.053), stdev = 1372578.510
+  CI (99.9%): [61216000.685, 71786622.900] (assumes normal distribution)
+
+
+# JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53301:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level3
+
+# Run progress: 40.00% complete, ETA 00:05:02
+# Fork: 1 of 1
+# Warmup Iteration   1: 67605636.507 ops/s
+# Warmup Iteration   2: 69621052.760 ops/s
+# Warmup Iteration   3: 71010248.192 ops/s
+# Warmup Iteration   4: 69532881.868 ops/s
+# Warmup Iteration   5: 71013446.760 ops/s
+Iteration   1: 70574046.109 ops/s
+Iteration   2: 70965533.458 ops/s
+Iteration   3: 71067189.031 ops/s
+Iteration   4: 70739591.373 ops/s
+Iteration   5: 67043243.012 ops/s
+
+
+Result "tester.MapBenchmark.measure_level3":
+  70077920.597 ±(99.9%) 6574269.856 ops/s [Average]
+  (min, avg, max) = (67043243.012, 70077920.597, 71067189.031), stdev = 1707317.004
+  CI (99.9%): [63503650.740, 76652190.453] (assumes normal distribution)
+
+
+# JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53301:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level4
+
+# Run progress: 60.00% complete, ETA 00:03:21
+# Fork: 1 of 1
+# Warmup Iteration   1: 58376736.170 ops/s
+# Warmup Iteration   2: 56309258.446 ops/s
+# Warmup Iteration   3: 58577905.930 ops/s
+# Warmup Iteration   4: 58987213.188 ops/s
+# Warmup Iteration   5: 56652677.235 ops/s
+Iteration   1: 56883247.928 ops/s
+Iteration   2: 58521062.413 ops/s
+Iteration   3: 58301230.510 ops/s
+Iteration   4: 58767115.865 ops/s
+Iteration   5: 58877423.848 ops/s
+
+
+Result "tester.MapBenchmark.measure_level4":
+  58270016.113 ±(99.9%) 3106384.470 ops/s [Average]
+  (min, avg, max) = (56883247.928, 58270016.113, 58877423.848), stdev = 806718.182
+  CI (99.9%): [55163631.643, 61376400.583] (assumes normal distribution)
+
+
+# JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53301:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level5
+
+# Run progress: 80.00% complete, ETA 00:01:40
+# Fork: 1 of 1
+# Warmup Iteration   1: 24666505.202 ops/s
+# Warmup Iteration   2: 25541321.825 ops/s
+# Warmup Iteration   3: 25787825.310 ops/s
+# Warmup Iteration   4: 25812122.914 ops/s
+# Warmup Iteration   5: 25673018.223 ops/s
+Iteration   1: 25745027.348 ops/s
+Iteration   2: 25655260.447 ops/s
+Iteration   3: 25747293.453 ops/s
+Iteration   4: 25341679.313 ops/s
+Iteration   5: 25104808.828 ops/s
+
+
+Result "tester.MapBenchmark.measure_level5":
+  25518813.878 ±(99.9%) 1097213.863 ops/s [Average]
+  (min, avg, max) = (25104808.828, 25518813.878, 25747293.453), stdev = 284942.956
+  CI (99.9%): [24421600.015, 26616027.741] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:08:23
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                     Mode  Cnt          Score         Error  Units
+MapBenchmark.measure_level1  thrpt    5  141991260.547 ±  419002.953  ops/s
+MapBenchmark.measure_level2  thrpt    5   66501311.793 ± 5285311.107  ops/s
+MapBenchmark.measure_level3  thrpt    5   70077920.597 ± 6574269.856  ops/s
+MapBenchmark.measure_level4  thrpt    5   58270016.113 ± 3106384.470  ops/s
+MapBenchmark.measure_level5  thrpt    5   25518813.878 ± 1097213.863  ops/s
+
+Process finished with exit code 0
+</code></pre>
+<p>使用初始化构造函数的测试结果。</p>
+<pre><code class="language-java"># JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53688:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level1
+
+# Run progress: 0.00% complete, ETA 00:08:20
+# Fork: 1 of 1
+# Warmup Iteration   1: 118482946.186 ops/s
+# Warmup Iteration   2: 112336132.574 ops/s
+# Warmup Iteration   3: 118383971.447 ops/s
+# Warmup Iteration   4: 116669575.125 ops/s
+# Warmup Iteration   5: 119473270.826 ops/s
+Iteration   1: 121741335.641 ops/s
+Iteration   2: 124303130.157 ops/s
+Iteration   3: 124904353.757 ops/s
+Iteration   4: 118528835.278 ops/s
+Iteration   5: 122213001.803 ops/s
+
+
+Result "tester.MapBenchmark.measure_level1":
+  122338131.327 ±(99.9%) 9689798.828 ops/s [Average]
+  (min, avg, max) = (118528835.278, 122338131.327, 124904353.757), stdev = 2516409.984
+  CI (99.9%): [112648332.499, 132027930.155] (assumes normal distribution)
+
+
+# JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53688:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level2
+
+# Run progress: 20.00% complete, ETA 00:06:43
+# Fork: 1 of 1
+# Warmup Iteration   1: 93315434.143 ops/s
+# Warmup Iteration   2: 92983341.778 ops/s
+# Warmup Iteration   3: 97101517.219 ops/s
+# Warmup Iteration   4: 92564247.846 ops/s
+# Warmup Iteration   5: 100285038.019 ops/s
+Iteration   1: 102162049.729 ops/s
+Iteration   2: 102379826.993 ops/s
+Iteration   3: 102475922.945 ops/s
+Iteration   4: 100944632.787 ops/s
+Iteration   5: 102234238.627 ops/s
+
+
+Result "tester.MapBenchmark.measure_level2":
+  102039334.216 ±(99.9%) 2403155.914 ops/s [Average]
+  (min, avg, max) = (100944632.787, 102039334.216, 102475922.945), stdev = 624091.959
+  CI (99.9%): [99636178.302, 104442490.130] (assumes normal distribution)
+
+
+# JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53688:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level3
+
+# Run progress: 40.00% complete, ETA 00:05:02
+# Fork: 1 of 1
+# Warmup Iteration   1: 97822881.423 ops/s
+# Warmup Iteration   2: 95718868.583 ops/s
+# Warmup Iteration   3: 97607085.636 ops/s
+# Warmup Iteration   4: 95961881.083 ops/s
+# Warmup Iteration   5: 96181959.004 ops/s
+Iteration   1: 97486071.647 ops/s
+Iteration   2: 97317494.401 ops/s
+Iteration   3: 97341695.379 ops/s
+Iteration   4: 97097857.201 ops/s
+Iteration   5: 94517775.269 ops/s
+
+
+Result "tester.MapBenchmark.measure_level3":
+  96752178.779 ±(99.9%) 4839327.658 ops/s [Average]
+  (min, avg, max) = (94517775.269, 96752178.779, 97486071.647), stdev = 1256758.025
+  CI (99.9%): [91912851.122, 101591506.437] (assumes normal distribution)
+
+
+# JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53688:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level4
+
+# Run progress: 60.00% complete, ETA 00:03:21
+# Fork: 1 of 1
+# Warmup Iteration   1: 92047944.166 ops/s
+# Warmup Iteration   2: 89678443.566 ops/s
+# Warmup Iteration   3: 89812773.142 ops/s
+# Warmup Iteration   4: 88930887.557 ops/s
+# Warmup Iteration   5: 85792676.395 ops/s
+Iteration   1: 89347289.220 ops/s
+Iteration   2: 89191963.589 ops/s
+Iteration   3: 83800965.269 ops/s
+Iteration   4: 89119847.919 ops/s
+Iteration   5: 89735595.781 ops/s
+
+
+Result "tester.MapBenchmark.measure_level4":
+  88239132.356 ±(99.9%) 9597356.077 ops/s [Average]
+  (min, avg, max) = (83800965.269, 88239132.356, 89735595.781), stdev = 2492402.896
+  CI (99.9%): [78641776.279, 97836488.433] (assumes normal distribution)
+
+
+# JMH version: 1.23
+# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11
+# VM invoker: C:\Program Files\Java\jdk1.8.0_221\jre\bin\java.exe
+# VM options: -javaagent:E:\app\IntelliJ IDEA 2019.1.4\lib\idea_rt.jar=53688:E:\app\IntelliJ IDEA 2019.1.4\bin -Dfile.encoding=UTF-8
+# Warmup: 5 iterations, 10 s each
+# Measurement: 5 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: tester.MapBenchmark.measure_level5
+
+# Run progress: 80.00% complete, ETA 00:01:40
+# Fork: 1 of 1
+# Warmup Iteration   1: 54077395.641 ops/s
+# Warmup Iteration   2: 59732722.907 ops/s
+# Warmup Iteration   3: 53583150.778 ops/s
+# Warmup Iteration   4: 59899100.161 ops/s
+# Warmup Iteration   5: 60709074.795 ops/s
+Iteration   1: 60754432.284 ops/s
+Iteration   2: 51357719.856 ops/s
+Iteration   3: 55849596.896 ops/s
+Iteration   4: 54854535.391 ops/s
+Iteration   5: 56884120.457 ops/s
+
+
+Result "tester.MapBenchmark.measure_level5":
+  55940080.977 ±(99.9%) 13094145.548 ops/s [Average]
+  (min, avg, max) = (51357719.856, 55940080.977, 60754432.284), stdev = 3400508.017
+  CI (99.9%): [42845935.429, 69034226.525] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:08:23
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                     Mode  Cnt          Score          Error  Units
+MapBenchmark.measure_level1  thrpt    5  122338131.327 ±  9689798.828  ops/s
+MapBenchmark.measure_level2  thrpt    5  102039334.216 ±  2403155.914  ops/s
+MapBenchmark.measure_level3  thrpt    5   96752178.779 ±  4839327.658  ops/s
+MapBenchmark.measure_level4  thrpt    5   88239132.356 ±  9597356.077  ops/s
+MapBenchmark.measure_level5  thrpt    5   55940080.977 ± 13094145.548  ops/s
+
+Process finished with exit code 0
+</code></pre>
+<h1>参考资料</h1>
+<ul>
+<li>Oracle, Class HashMap, <em>Oracle Java Documentation</em>. <a href="https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html">📄</a></li>
+<li>Yikun, Java-HashMap工作原理及实现, <em>Yikun’s</em> Blog, 2015. <a href="https://yikun.github.io/2015/04/01/Java-HashMap%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/">📄</a></li>
+<li>美团, Java 8系列之重新认识HashMap, <em>美团技术团队</em>, 2015. <a href="https://tech.meituan.com/2016/06/24/java-hashmap.html">📄</a></li>
+<li>Aniket Thakur, “Why HashMap insert new Node on index (n - 1) &#x26; hash?”, <em>Stack Overflow</em>, 2017. <a href="https://stackoverflow.com/a/44615382">📄</a></li>
+<li>Jul, "Why return (h = key.hashCode()) ^ (h >>> 16) other than key.hashcode?", <em>Stack Overflow</em>, 2017. <a href="https://stackoverflow.com/a/45140621">📄</a></li>
+<li>Andy Turner, "HashMap.tableSizeFor(…). How does this code round up to the next power of 2?", <em>Stack Overflow</em>, 2018. <a href="https://stackoverflow.com/a/51121765">📄</a></li>
+<li>Mincong Huang, learning-hashmap, <em>Mincong Huang’s</em> Blog, 2019. <a href="https://mincong.io/2018/04/08/learning-hashmap/">📄</a></li>
+<li>飞污熊博客, Java微基准测试框架JMH, <em>飞污熊博客’s</em> Blog, 2018. <a href="https://www.xncoding.com/2018/01/07/java/jmh.html">📄</a></li>
+<li>Jakob Jenkov, JMH - Java Microbenchmark Harness, <em>Jakob Jenkov's</em> Blog, 2015. <a href="http://tutorials.jenkov.com/java-performance/jmh.html">📄</a></li>
+<li>jhm samples. <a href="https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/">📄</a></li>
+</ul>
+</div></div></div><div style="position:fixed;bottom:150px;right:50px"><nav id="posts-nav"><ul style="list-style:none"></ul></nav></div><div class="ant-row ant-row-center" style="margin-bottom:40px;margin-top:40px"><span class="ant-typography"><u>· last updated：<!-- --> ·</u></span></div></div></div><span style="position:fixed;bottom:60px;right:15px;z-index:999;background-color:#555555" class="ant-avatar ant-avatar-lg ant-avatar-circle ant-avatar-icon ant-dropdown-trigger"><span role="img" aria-label="unordered-list" class="anticon anticon-unordered-list"><svg viewBox="64 64 896 896" focusable="false" class="" data-icon="unordered-list" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M912 192H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 284H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 284H328c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h584c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM104 228a56 56 0 10112 0 56 56 0 10-112 0zm0 284a56 56 0 10112 0 56 56 0 10-112 0zm0 284a56 56 0 10112 0 56 56 0 10-112 0z"></path></svg></span></span><div style="display:none" class="web-map"><a href="/">主页</a><a href="/notes">笔记</a></div></main><footer class="ant-layout-footer ki-footer"><a href="http://www.beian.miit.gov.cn" target="_blank" style="color:rgba(250, 250, 250, 0.938)">桂ICP备18000815号-2 © 2017 - 2020 - KIYAK-WEB</a></footer></section></div></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"post":{"filename":"programming/[Java]HashMap原理简析.md","title":"HashMap原理简析","date":"2020-06-06T14:02:00.000Z","updated":"2020-06-06T14:02:00.000Z","preText":"💪","preTextColor":"rgb(230, 230, 230)","status":null,"statusColor":null,"content":"\u003ch1\u003eHashMap原理简析\u003c/h1\u003e\n\u003ch2\u003e概述\u003c/h2\u003e\n\u003cblockquote\u003e\n\u003cp\u003e\u003ca href=\"https://baike.baidu.com/item/%E6%95%A3%E5%88%97%E8%A1%A8/10027933\"\u003e散列表\u003c/a\u003e（Hash table，也叫哈希表），是根据关键码值(Key value)而直接进行访问的\u003ca href=\"https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/1450\"\u003e数据结构\u003c/a\u003e。也就是说，它通过把关键码值映射到表中一个位置来访问记录，以加快查找的速度。这个映射函数叫做\u003ca href=\"https://baike.baidu.com/item/%E6%95%A3%E5%88%97%E5%87%BD%E6%95%B0/2366288\"\u003e散列函数\u003c/a\u003e，存放记录的\u003ca href=\"https://baike.baidu.com/item/%E6%95%B0%E7%BB%84/3794097\"\u003e数组\u003c/a\u003e叫做\u003ca href=\"https://baike.baidu.com/item/%E6%95%A3%E5%88%97%E8%A1%A8/10027933\"\u003e散列表\u003c/a\u003e。\u003c/p\u003e\n\u003c/blockquote\u003e\n\u003cp\u003e\u003cstrong\u003eHashMap\u003c/strong\u003e 是 Java 项目开发者使用频率最高的工具类之一，它内部维护了一个哈希表，用于映射(键值对)处理的数据类型，可以说 HashMap 在项目代码中几乎随处可见。\u003c/p\u003e\n\u003ch2\u003e要点\u003c/h2\u003e\n\u003cp\u003e官方\u003ca href=\"https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html\"\u003e文档\u003c/a\u003e里已经对 HashMap 进行了描述，大致有下列 5 个要点：\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003e允许 \u003ccode\u003enull\u003c/code\u003e 值与 \u003ccode\u003enull\u003c/code\u003e key\u003c/li\u003e\n\u003cli\u003e无法保证顺序\u003c/li\u003e\n\u003cli\u003e影响性能的两个因素：\u003cem\u003ecapacity\u003c/em\u003e 和 \u003cem\u003eload factor\u003c/em\u003e\u003c/li\u003e\n\u003cli\u003e不保证线程同步\u003c/li\u003e\n\u003cli\u003e具备 \u003cem\u003efail-fast\u003c/em\u003e 保护机制\u003c/li\u003e\n\u003c/ol\u003e\n\u003cp\u003e\u003cem\u003ecapacity\u003c/em\u003e 指的是哈希表的容量， \u003cem\u003eload factor\u003c/em\u003e 指的是哈希表的负载因子，关于这两个变量的关系，官方的描述是：\u003c/p\u003e\n\u003cblockquote\u003e\n\u003cp\u003eThe \u003cem\u003eload factor\u003c/em\u003e is a measure of how full the hash table is allowed to get before its capacity is automatically increased. When the number of entries in the hash table exceeds the product of the load factor and the current capacity, the hash table is \u003cstrong\u003e\u003cem\u003erehashed\u003c/em\u003e\u003c/strong\u003e (that is, internal data structures are rebuilt) so that the hash table has approximately twice the number of buckets.\u003c/p\u003e\n\u003c/blockquote\u003e\n\u003cblockquote\u003e\n\u003cp\u003eAs a general rule, the default load factor (.75) offers a good tradeoff between time and space costs. Higher values decrease the space overhead but increase the lookup cost (reflected in most of the operations of the \u003ccode\u003eHashMap\u003c/code\u003e class, including \u003ccode\u003eget\u003c/code\u003e and \u003ccode\u003eput\u003c/code\u003e). The expected number of entries in the map and its load factor should be taken into account when setting its initial capacity,\u003c/p\u003e\n\u003c/blockquote\u003e\n\u003cp\u003e简而言之：\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003e只要满足条件 \u003ccode\u003e总数据量 \u003e load factor * current capacity\u003c/code\u003e，HashMap 内部的哈希表就会被重构 (简称 rehash)，哈希表容量扩大至原来的 2 倍。\u003c/li\u003e\n\u003cli\u003e为避免哈希表 rehash 带来的性能损耗，建议考虑初始容量大小 \u003cem\u003einitial capacity\u003c/em\u003e。\u003c/li\u003e\n\u003cli\u003e\u003cem\u003eload factor\u003c/em\u003e 默认值是 0.75，该值的定义权衡了时间与空间的成本，设置太高或者太低都会导致性能失衡。\u003c/li\u003e\n\u003c/ul\u003e\n\u003ch2\u003e初始化\u003c/h2\u003e\n\u003cp\u003eHashMap 提供四个构造函数。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003epublic HashMap() // 默认\npublic HashMap(int initialCapacity) // 指定初始化容量\npublic HashMap(int initialCapacity, float loadFactor) // 指定初始化容量、负载因子\npublic HashMap(Map\u0026#x3C;? extends K, ? extends V\u003e m) // 初始化并且复制另外一个 Map\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e如果未指定 \u003ccode\u003einitialCapacity\u003c/code\u003e，那么 (初始) 哈希表容量默认是 \u003cstrong\u003e16\u003c/strong\u003e，如果未指定 \u003ccode\u003eloadFactor\u003c/code\u003e，那么负载因子默认是 \u003cstrong\u003e0.75\u003c/strong\u003e。正常情况下，开发人员无需改动 \u003ccode\u003eloadFactor\u003c/code\u003e 数值。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003estatic final int DEFAULT_INITIAL_CAPACITY = 1 \u0026#x3C;\u0026#x3C; 4; // aka 16\nstatic final float DEFAULT_LOAD_FACTOR = 0.75f;\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e根据 HashMap 的文档所述，可通过预估需要存储的数据量，来避免不必要的 rehash。\u003ca href=\"https://github.com/alibaba/p3c\"\u003e阿里巴巴Java开发手册\u003c/a\u003e也针对这种情况进行了描述：\u003c/p\u003e\n\u003cblockquote\u003e\n\u003cp\u003e说明：HashMap 使用 HashMap(int initialCapacity) 初始化，如果暂时无法确定集合大小，那么指定默认值（16）即可。\u003cbr\u003e\n正例：initialCapacity = (需要存储的元素个数 / 负载因子) + 1。注意负载因子（即 loader factor）默认为 0.75，如果暂时无法确定初始值大小，请设置为 16（即默认值）。\u003cbr\u003e\n反例：HashMap 需要放置 1024 个元素，由于没有设置容量初始大小，随着元素不断增加，容量 7 次被迫扩大，resize 需要重建 hash 表。当放置的集合元素个数达千万级别时，不断扩容会严重影响性能。\u003c/p\u003e\n\u003c/blockquote\u003e\n\u003cp\u003e类似的，Google 出品的 Guava 库也针对 HashMap 的初始化进行了封装：\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003epublic static \u0026#x3C;K, V\u003e HashMap\u0026#x3C;K, V\u003e newHashMapWithExpectedSize(int expectedSize) {\n    return new HashMap(capacity(expectedSize));\n}\n\nstatic int capacity(int expectedSize) {\n    if (expectedSize \u0026#x3C; 3) {\n        CollectPreconditions.checkNonnegative(expectedSize, \"expectedSize\");\n        return expectedSize + 1;\n    } else {\n        return expectedSize \u0026#x3C; 1073741824 ? (int)((float)expectedSize / 0.75F + 1.0F) : 2147483647;\n    }\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e无一例外，它们都使用 \u003ccode\u003e((float) expectedSize / loadFactor) + 1.0F\u003c/code\u003e 作为 HashMap 的入参。因此在开发过程中，如果知道需要存储的数据量较大，可以采用这些方式进行初始化，提高系统运行的效率。\u003c/p\u003e\n\u003ch2\u003e存数据(put)\u003c/h2\u003e\n\u003cp\u003e在执行一行 \u003ccode\u003emap.put(\"one\", \"\")\u003c/code\u003e代码大概发生了什么？\u003c/p\u003e\n\u003chr\u003e\n\u003col\u003e\n\u003cli\u003e根据字符串 \u003cem\u003eone\u003c/em\u003e 的 \u003cem\u003ehashCode()\u003c/em\u003e 做一次 \u003cem\u003ehash\u003c/em\u003e 计算\u003c/li\u003e\n\u003cli\u003e判断哈希表是否初始化。否，则进行初始化 \u003ccode\u003eresize\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003e根据 \u003cem\u003ehash\u003c/em\u003e 计算 \u003cem\u003eone\u003c/em\u003e 在哈希表的实际位置 \u003cem\u003eindex\u003c/em\u003e\u003c/li\u003e\n\u003cli\u003e判断所处位置是否有数据 (哈希碰撞)\u003cul\u003e\n\u003cli\u003e有且等于 \u003cem\u003eone\u003c/em\u003e ，把旧数据覆盖掉\u003c/li\u003e\n\u003cli\u003e有且不等于 \u003cem\u003eone\u003c/em\u003e\u003cul\u003e\n\u003cli\u003e在当前位置以链表方式追加。如果链表长度大于等于 7，链表重构为红黑树\u003cbr\u003e\n如果追加过程发现相同数据  \u003cem\u003eone\u003c/em\u003e，覆盖旧数据\u003c/li\u003e\n\u003c/ul\u003e\u003c/li\u003e\n\u003cli\u003e无，直接存入哈希表\u003c/li\u003e\n\u003c/ul\u003e\u003c/li\u003e\n\u003cli\u003e如果当前满足 \u003ccode\u003e总数据量 \u003e load factor * current capacity\u003c/code\u003e，则数据结构重构 \u003ccode\u003eresize\u003c/code\u003e\u003c/li\u003e\n\u003c/ol\u003e\n\u003chr\u003e\n\u003cp\u003e以上流程可直接进入 \u003cstrong\u003ejava.util.HashMap#put\u003c/strong\u003e 方法一探究竟。\u003c/p\u003e\n\u003ch2\u003e哈希表的容量(2^n)\u003c/h2\u003e\n\u003cp\u003e无论是哈希表默认大小、指定初始大小、扩容大小，结果都将是 \u003cstrong\u003e2的幂\u003c/strong\u003e（2的n次方）。\u003c/p\u003e\n\u003cp\u003e如果指定 \u003ccode\u003einitialCapacity\u003c/code\u003e，那么 \u003ccode\u003einitialCapacity\u003c/code\u003e 就会被 \u003cstrong\u003ejava.util.HashMap#tableSizeFor\u003c/strong\u003e 方法处理。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003epublic HashMap(int initialCapacity)\n                          |\n                          |_______\n                                  |\nstatic final int tableSizeFor(int cap)\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003e/**\n* Returns a power of two size for the given target capacity.\n*/\nstatic final int tableSizeFor(int cap) {\n    int n = cap - 1;\n    n |= n \u003e\u003e\u003e 1;\n    n |= n \u003e\u003e\u003e 2;\n    n |= n \u003e\u003e\u003e 4;\n    n |= n \u003e\u003e\u003e 8;\n    n |= n \u003e\u003e\u003e 16;\n    return (n \u0026#x3C; 0) ? 1 : (n \u003e= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e假设指定 \u003ccode\u003einitialCapacity = 7\u003c/code\u003e，那么根据代码逻辑可推演出以下内容：\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-markdown\"\u003ecap = 7\nn = cap - 1 = 6 = 0 1 1 0\nn |= n \u003e\u003e\u003e 1;    0 1 1 0 | 0 0 1 1 = 0 1 1 1 = 7\nn |= n \u003e\u003e\u003e 2;    0 1 1 1 | 0 0 0 1 = 0 1 1 1 = 7\nn |= n \u003e\u003e\u003e 4;    0 1 1 1 | 0 0 0 0 = 0 1 1 1 = 7\nn |= n \u003e\u003e\u003e 8;    0 1 1 1 | 0 0 0 0 = 0 1 1 1 = 7\nn |= n \u003e\u003e\u003e 16;   0 1 1 1 | 0 0 0 0 = 0 1 1 1 = 7\nreturn n + 1     7 + 1 = 8 \n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e所以计算出的哈希表容量是 8 = 2^3，然后再根据\u003ccode\u003eload factor * current capacity\u003c/code\u003e计算出当前有效存储量为 6，并将 6 赋予给 HashMap 的实例变量 \u003ccode\u003ethreshold\u003c/code\u003e 。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003eint threshold;\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e而当哈希表的数据条数大于 6 将会发生 rehash。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003eif (++size \u003e threshold)\n    resize();\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e哈希表的扩容计算方式很简单：\u003c/p\u003e\n\u003cp\u003e \u003ccode\u003enewCap = oldCap \u0026#x3C;\u0026#x3C; 1\u003c/code\u003e，\u003ccode\u003enewThr = oldThr \u0026#x3C;\u0026#x3C; 1\u003c/code\u003e\u003c/p\u003e\n\u003ch2\u003e计算位置(下标)\u003c/h2\u003e\n\u003cp\u003e分为两步，首先计算一次 hash，利用 key 的 hashcode 高十六位和低十六位进行异或运算：\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003estatic final int hash(Object key) {\n    int h;\n    return (key == null) ? 0 : (h = key.hashCode()) ^ (h \u003e\u003e\u003e 16);\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e然后是下标的计算，n 代表哈希表容量，将准备好的 hash 再次进行 \u003ccode\u003e\u0026#x26;\u003c/code\u003e 运算， n-1 避免数组越界：\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003ei = (n - 1) \u0026#x26; hash\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e假设哈希表容量为 8，并且存入一条数据： \u003ccode\u003emap.put(\"abcabcabc\", \"\")\u003c/code\u003e\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003eh = key.hashCode(): 0001 0010 0100 0011 1011 0011 1010 0010 // \"abcabcabc\".hashCode();\n                                      xor\nh \u003e\u003e\u003e 16:           0000 0000 0000 0000 0001 0010 0100 0011\n                                      ↓↓↓\nhash = h ^ h\u003e\u003e\u003e16:  0001 0010 0100 0011 1010 0001 1110 0001\n                                       \u0026#x26;\nn - 1:              0000 0000 0000 0000 0000 0000 0000 0111\n                                      ↓↓↓\n(n - 1) \u0026#x26; hash:     0000 0000 0000 0000 0000 0000 0000 0001 // index = 1\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e因此计算出 “abcabcabc” 这个 key 在哈希表的位置(下标)是 1 。\u003c/p\u003e\n\u003cp\u003e关于 hash 函数的设计，代码注释的说法是：\u003c/p\u003e\n\u003cblockquote\u003e\n\u003cp\u003e  Computes key.hashCode() and spreads (XORs) higher bits of hash to lower.  Because the table uses power-of-two masking, sets of hashes that vary only in bits above the current mask will always collide. (Among known examples are sets of Float keys holding consecutive whole numbers in small tables.)  So we apply a transform that spreads the impact of higher bits downward. There is a tradeoff between speed, utility, and quality of bit-spreading. Because many common sets of hashes are already reasonably distributed (so don't benefit from spreading), and because we use trees to handle large sets of collisions in bins, we just XOR some shifted bits in the cheapest possible way to reduce systematic lossage, as well as to incorporate impact of the highest bits that would otherwise never be used in index calculations because of table bounds.\u003c/p\u003e\n\u003c/blockquote\u003e\n\u003cp\u003e注释中说到，大多数的 hashCode 的分布已经非常合理了，如果还发生冲突就使用链表或者树结构解决，因此设计者使用最节省系统性能开销的移位以及异或运算来避免更多的冲突。\u003c/p\u003e\n\u003cp\u003e使用 hash 函数，是因为要考虑到，如果使用的 hashCode 仅在高位不同，而低位相同，那么在极端情况下发生冲突概率将增大。\u003c/p\u003e\n\u003cp\u003e例如：\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003ehashCode 1:         1100 0011 1000 0011 1000 1010 0001 0000\nhashCode 2:         0100 1011 0100 1100 1111 0110 1100 0000\nhashCode 3:         0000 0001 1001 1001 0110 1011 1110 0000\n                                       \u0026#x26;\nn - 1:              0000 0000 0000 0000 0000 0000 0000 0111\n                                      ↓↓↓\n(n - 1) \u0026#x26; hashCode: 0000 0000 0000 0000 0000 0000 0000 0111 // Index is always the same: 7\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e可以看到，如果三个 hashCode 的高位不同，而低 3 位完全相同(全为 0)，那  \u003ccode\u003e(n -1) \u0026#x26; hashCode\u003c/code\u003e 运算的结果都相同 (7)，这种情况所有的数据都以链表或者树结构形式存在同一位置 (7)。如果发生更多冲突，时间复杂度从 O(1) 变为 O(n) 或者 O(log n)，性能就会有所降低。\u003c/p\u003e\n\u003cp\u003e使用 XOR 的原因，是因为这样的运算可使得 1 和 0 具有 50% / 50% 的分布，相比于 \u003ccode\u003e\u0026#x26;\u003c/code\u003e 和 \u003ccode\u003e|\u003c/code\u003e 的 25/75 和 75/25 更加平均、稳定。\u003c/p\u003e\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003eXOR\u003c/th\u003e\n\u003cth\u003e1\u003c/th\u003e\n\u003cth\u003e0\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003e\u003cstrong\u003e1\u003c/strong\u003e\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003e\u003cstrong\u003e0\u003c/strong\u003e\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\u003cp\u003e1 和 0 数量各占总数一半。\u003c/p\u003e\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003e\u0026#x26;\u003c/th\u003e\n\u003cth\u003e1\u003c/th\u003e\n\u003cth\u003e0\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003e\u003cstrong\u003e1\u003c/strong\u003e\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003e\u003cstrong\u003e0\u003c/strong\u003e\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\u003cp\u003e1 和 0 数量各占总数 25% 和 75%。\u003c/p\u003e\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003e|\u003c/th\u003e\n\u003cth\u003e1\u003c/th\u003e\n\u003cth\u003e0\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003e\u003cstrong\u003e1\u003c/strong\u003e\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003e\u003cstrong\u003e0\u003c/strong\u003e\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\u003cp\u003e1 和 0 数量各占总数 75% 和 25%。\u003c/p\u003e\n\u003ch2\u003e扩容(resize)\u003c/h2\u003e\n\u003cp\u003e哈希表的初始化与扩容都使用同一套逻辑，即 \u003cstrong\u003ejava.util.HashMap#resize\u003c/strong\u003e 方法。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003efinal Node\u0026#x3C;K,V\u003e[] resize()\n\u003c/code\u003e\u003c/pre\u003e\n\u003cblockquote\u003e\n\u003cp\u003eInitializes or doubles table size.  If null, allocates in accord with initial capacity target held in field threshold. Otherwise, because we are using power-of-two expansion, the elements from each bin must either stay at same index, or move with a power of two offset in the new table.\u003c/p\u003e\n\u003c/blockquote\u003e\n\u003cp\u003e大致意思就是说，当超过限制的时候会 resize，然而又因为我们使用的是2次幂的扩展(指长度扩为原来2倍)，所以，元素的位置要么是在原位置，要么是在原位置再移动2次幂的位置。\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"https://resource.1024kb.top/image/code-sample/hashmap-resize.png\" alt=\"git-rebase.gif\"\u003e\u003c/p\u003e\n\u003cp\u003e观察上图扩容后(8 -\u003e 16)的数据分布，要么是改变了索引，要么是不变，改变的就是移动2次幂的位置(+8)。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003e5 + 8 = 13\n    4 = 4\n0 + 8 = 8\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e再次扩容亦是如此，如 16 -\u003e 32 ，那么改变的也是移动2次幂的位置(+16)。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003e13 + 16 = 29\n4  + 16 = 20\n8  + 16 = 24\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e对于是否需要改变索引，只需要看看原来的 hash 值新增的那个 bit 是 1 还是 0 就好了，是 0 则无需改变位置。例如上图的 hash2，扩容后由 \u003ccode\u003e100\u003c/code\u003e 变为 \u003ccode\u003e0100\u003c/code\u003e，多出的一位数是 0，那么 0 和其它数字进行与运算都是 0。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003ehash2:   100\n          \u0026#x26;\nn = 8:   111 \n          ↓\n         100 = 4\n--------------------\nhash2:  0100\n          \u0026#x26;\nn = 16: 1111\n          ↓\n        0100 = 4\n\u003c/code\u003e\u003c/pre\u003e\n\u003ch2\u003e取数据(get)\u003c/h2\u003e\n\u003cp\u003e在理解以上逻辑之后，get 就很简单了。大致思路如下：\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003e根据 key 的 hashCode 进行一次 hash\u003c/li\u003e\n\u003cli\u003e利用 \u003ccode\u003e(n - 1) \u0026#x26; hash\u003c/code\u003e 计算出实际位置(索引)\u003c/li\u003e\n\u003cli\u003e如果根据索引直接匹配到，直接返回， O(1)\u003c/li\u003e\n\u003cli\u003e如果根据索引未能匹配到\u003cul\u003e\n\u003cli\u003e若为树，则使用查询树的操作，O(logn)\u003c/li\u003e\n\u003cli\u003e若为链表，则循环链表查找，O(n)\u003c/li\u003e\n\u003c/ul\u003e\u003c/li\u003e\n\u003c/ol\u003e\n\u003ch2\u003e测试\u003c/h2\u003e\n\u003cp\u003e利用 benchmark 测试工具来测试 HashMap，在初始化指定容量与使用默认构造函数的性能区别。\u003c/p\u003e\n\u003cp\u003e测试分为 5 个等级：\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003e添加不同的数据直到满足 16 条\u003c/li\u003e\n\u003cli\u003e添加不同的数据直到满足 100 条\u003c/li\u003e\n\u003cli\u003e添加不同的数据直到满足 1000 条\u003c/li\u003e\n\u003cli\u003e添加不同的数据直到满足 10000 条\u003c/li\u003e\n\u003cli\u003e添加不同的数据直到满足 100000 条\u003c/li\u003e\n\u003c/ol\u003e\n\u003cp\u003e使用默认构造函数：\u003c/p\u003e\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003eBenchmark\u003c/th\u003e\n\u003cth\u003eMode\u003c/th\u003e\n\u003cth\u003eCnt\u003c/th\u003e\n\u003cth\u003eScore\u003c/th\u003e\n\u003cth\u003eError\u003c/th\u003e\n\u003cth\u003eUnits\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level1\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e141991260.547 ±  419002.953\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level2\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e66501311.793 ± 5285311.107\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level3\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e70077920.597 ± 6574269.856\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level4\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e58270016.113 ± 3106384.470\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level5\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e25518813.878 ± 1097213.863\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\u003cp\u003e使用初始化容量的构造函数，并且考虑实际数据量传入合理的参数：\u003c/p\u003e\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003eBenchmark\u003c/th\u003e\n\u003cth\u003eMode\u003c/th\u003e\n\u003cth\u003eCnt\u003c/th\u003e\n\u003cth\u003eScore\u003c/th\u003e\n\u003cth\u003eError\u003c/th\u003e\n\u003cth\u003eUnits\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level1\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e122338131.327 ±  9689798.828\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level2\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e102039334.216 ±  2403155.914\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level3\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e96752178.779 ±  4839327.658\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level4\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e88239132.356 ±  9597356.077\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003eMapBenchmark.measure_level5\u003c/td\u003e\n\u003ctd\u003ethrpt\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e55940080.977 ± 13094145.548\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003eops/s\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\u003cp\u003e关注 Score 的结果，它们都是 xxx ± xxx，Units 代表单位每秒多少次操作。\u003c/p\u003e\n\u003cp\u003e可以看到无论哪种初始化操作，随着数据量增大，每秒操作次数都随之降低。而同样条件下，使用\u003cstrong\u003e初始化容量的构造函数\u003c/strong\u003e相比使用\u003cstrong\u003e默认构造函数\u003c/strong\u003e，前者性能更佳。\u003c/p\u003e\n\u003ch1\u003e附录\u003c/h1\u003e\n\u003cp\u003e benchmark 测试代码。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003e@State(Scope.Thread)\npublic class MapBenchmark {\n\n  String[] resource;\n\n  @Setup()\n  public void prepare() {\n      resource = new String[100000];\n      for (int i = 0; i \u0026#x3C; resource.length; i++) {\n          resource[i] = String.valueOf(i);\n      }\n  }\n\n  private Map\u0026#x3C;String, String\u003e reps(int reps) {\n      // Map\u0026#x3C;String, String\u003e map = new HashMap\u0026#x3C;\u003e((int) ((float) reps / 0.75F + 1.0F)); // 使用初始化容量的构造函数\n      Map\u0026#x3C;String, String\u003e map = new HashMap\u0026#x3C;\u003e(); // 使用默认构造函数\n\n      for (int i = 0; i \u0026#x3C; reps; i++) {\n          String test = resource[i];\n          map.put(test, test);\n      }\n      return map;\n  }\n\n  @Benchmark\n  @OperationsPerInvocation(10)\n  public Map\u0026#x3C;String, String\u003e measure_level1() {\n      return reps(10);\n  }\n\n  @Benchmark\n  @OperationsPerInvocation(100)\n  public Map\u0026#x3C;String, String\u003e measure_level2() {\n      return reps(100);\n  }\n\n  @Benchmark\n  @OperationsPerInvocation(1000)\n  public Map\u0026#x3C;String, String\u003e measure_level3() {\n      return reps(1000);\n  }\n\n  @Benchmark\n  @OperationsPerInvocation(10000)\n  public Map\u0026#x3C;String, String\u003e measure_level4() {\n      return reps(10_000);\n  }\n\n  @Benchmark\n  @OperationsPerInvocation(100000)\n  public Map\u0026#x3C;String, String\u003e measure_level5() {\n      return reps(100_000);\n  }\n\n  public static void main(String[] args) throws RunnerException {\n      Options opt = new OptionsBuilder()\n              .include(MapBenchmark.class.getSimpleName())\n              .forks(1)\n              .build();\n      new Runner(opt).run();\n  }\n\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e使用默认构造函数的测试结果。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003e# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53301:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level1\n\n# Run progress: 0.00% complete, ETA 00:08:20\n# Fork: 1 of 1\n# Warmup Iteration   1: 127001625.901 ops/s\n# Warmup Iteration   2: 141822524.390 ops/s\n# Warmup Iteration   3: 133428241.333 ops/s\n# Warmup Iteration   4: 132244469.411 ops/s\n# Warmup Iteration   5: 138276778.513 ops/s\nIteration   1: 141895511.199 ops/s\nIteration   2: 141923059.081 ops/s\nIteration   3: 142158823.597 ops/s\nIteration   4: 141937212.493 ops/s\nIteration   5: 142041696.363 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level1\":\n  141991260.547 ±(99.9%) 419002.953 ops/s [Average]\n  (min, avg, max) = (141895511.199, 141991260.547, 142158823.597), stdev = 108813.736\n  CI (99.9%): [141572257.593, 142410263.500] (assumes normal distribution)\n\n\n# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53301:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level2\n\n# Run progress: 20.00% complete, ETA 00:06:43\n# Fork: 1 of 1\n# Warmup Iteration   1: 66265103.610 ops/s\n# Warmup Iteration   2: 66389800.461 ops/s\n# Warmup Iteration   3: 67855747.609 ops/s\n# Warmup Iteration   4: 67289955.476 ops/s\n# Warmup Iteration   5: 67750553.602 ops/s\nIteration   1: 67298893.171 ops/s\nIteration   2: 66615628.545 ops/s\nIteration   3: 64314592.829 ops/s\nIteration   4: 66334869.364 ops/s\nIteration   5: 67942575.053 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level2\":\n  66501311.793 ±(99.9%) 5285311.107 ops/s [Average]\n  (min, avg, max) = (64314592.829, 66501311.793, 67942575.053), stdev = 1372578.510\n  CI (99.9%): [61216000.685, 71786622.900] (assumes normal distribution)\n\n\n# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53301:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level3\n\n# Run progress: 40.00% complete, ETA 00:05:02\n# Fork: 1 of 1\n# Warmup Iteration   1: 67605636.507 ops/s\n# Warmup Iteration   2: 69621052.760 ops/s\n# Warmup Iteration   3: 71010248.192 ops/s\n# Warmup Iteration   4: 69532881.868 ops/s\n# Warmup Iteration   5: 71013446.760 ops/s\nIteration   1: 70574046.109 ops/s\nIteration   2: 70965533.458 ops/s\nIteration   3: 71067189.031 ops/s\nIteration   4: 70739591.373 ops/s\nIteration   5: 67043243.012 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level3\":\n  70077920.597 ±(99.9%) 6574269.856 ops/s [Average]\n  (min, avg, max) = (67043243.012, 70077920.597, 71067189.031), stdev = 1707317.004\n  CI (99.9%): [63503650.740, 76652190.453] (assumes normal distribution)\n\n\n# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53301:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level4\n\n# Run progress: 60.00% complete, ETA 00:03:21\n# Fork: 1 of 1\n# Warmup Iteration   1: 58376736.170 ops/s\n# Warmup Iteration   2: 56309258.446 ops/s\n# Warmup Iteration   3: 58577905.930 ops/s\n# Warmup Iteration   4: 58987213.188 ops/s\n# Warmup Iteration   5: 56652677.235 ops/s\nIteration   1: 56883247.928 ops/s\nIteration   2: 58521062.413 ops/s\nIteration   3: 58301230.510 ops/s\nIteration   4: 58767115.865 ops/s\nIteration   5: 58877423.848 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level4\":\n  58270016.113 ±(99.9%) 3106384.470 ops/s [Average]\n  (min, avg, max) = (56883247.928, 58270016.113, 58877423.848), stdev = 806718.182\n  CI (99.9%): [55163631.643, 61376400.583] (assumes normal distribution)\n\n\n# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53301:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level5\n\n# Run progress: 80.00% complete, ETA 00:01:40\n# Fork: 1 of 1\n# Warmup Iteration   1: 24666505.202 ops/s\n# Warmup Iteration   2: 25541321.825 ops/s\n# Warmup Iteration   3: 25787825.310 ops/s\n# Warmup Iteration   4: 25812122.914 ops/s\n# Warmup Iteration   5: 25673018.223 ops/s\nIteration   1: 25745027.348 ops/s\nIteration   2: 25655260.447 ops/s\nIteration   3: 25747293.453 ops/s\nIteration   4: 25341679.313 ops/s\nIteration   5: 25104808.828 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level5\":\n  25518813.878 ±(99.9%) 1097213.863 ops/s [Average]\n  (min, avg, max) = (25104808.828, 25518813.878, 25747293.453), stdev = 284942.956\n  CI (99.9%): [24421600.015, 26616027.741] (assumes normal distribution)\n\n\n# Run complete. Total time: 00:08:23\n\nREMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on\nwhy the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial\nexperiments, perform baseline and negative tests that provide experimental control, make sure\nthe benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.\nDo not assume the numbers tell you what you want them to tell.\n\nBenchmark                     Mode  Cnt          Score         Error  Units\nMapBenchmark.measure_level1  thrpt    5  141991260.547 ±  419002.953  ops/s\nMapBenchmark.measure_level2  thrpt    5   66501311.793 ± 5285311.107  ops/s\nMapBenchmark.measure_level3  thrpt    5   70077920.597 ± 6574269.856  ops/s\nMapBenchmark.measure_level4  thrpt    5   58270016.113 ± 3106384.470  ops/s\nMapBenchmark.measure_level5  thrpt    5   25518813.878 ± 1097213.863  ops/s\n\nProcess finished with exit code 0\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003e使用初始化构造函数的测试结果。\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"language-java\"\u003e# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53688:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level1\n\n# Run progress: 0.00% complete, ETA 00:08:20\n# Fork: 1 of 1\n# Warmup Iteration   1: 118482946.186 ops/s\n# Warmup Iteration   2: 112336132.574 ops/s\n# Warmup Iteration   3: 118383971.447 ops/s\n# Warmup Iteration   4: 116669575.125 ops/s\n# Warmup Iteration   5: 119473270.826 ops/s\nIteration   1: 121741335.641 ops/s\nIteration   2: 124303130.157 ops/s\nIteration   3: 124904353.757 ops/s\nIteration   4: 118528835.278 ops/s\nIteration   5: 122213001.803 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level1\":\n  122338131.327 ±(99.9%) 9689798.828 ops/s [Average]\n  (min, avg, max) = (118528835.278, 122338131.327, 124904353.757), stdev = 2516409.984\n  CI (99.9%): [112648332.499, 132027930.155] (assumes normal distribution)\n\n\n# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53688:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level2\n\n# Run progress: 20.00% complete, ETA 00:06:43\n# Fork: 1 of 1\n# Warmup Iteration   1: 93315434.143 ops/s\n# Warmup Iteration   2: 92983341.778 ops/s\n# Warmup Iteration   3: 97101517.219 ops/s\n# Warmup Iteration   4: 92564247.846 ops/s\n# Warmup Iteration   5: 100285038.019 ops/s\nIteration   1: 102162049.729 ops/s\nIteration   2: 102379826.993 ops/s\nIteration   3: 102475922.945 ops/s\nIteration   4: 100944632.787 ops/s\nIteration   5: 102234238.627 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level2\":\n  102039334.216 ±(99.9%) 2403155.914 ops/s [Average]\n  (min, avg, max) = (100944632.787, 102039334.216, 102475922.945), stdev = 624091.959\n  CI (99.9%): [99636178.302, 104442490.130] (assumes normal distribution)\n\n\n# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53688:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level3\n\n# Run progress: 40.00% complete, ETA 00:05:02\n# Fork: 1 of 1\n# Warmup Iteration   1: 97822881.423 ops/s\n# Warmup Iteration   2: 95718868.583 ops/s\n# Warmup Iteration   3: 97607085.636 ops/s\n# Warmup Iteration   4: 95961881.083 ops/s\n# Warmup Iteration   5: 96181959.004 ops/s\nIteration   1: 97486071.647 ops/s\nIteration   2: 97317494.401 ops/s\nIteration   3: 97341695.379 ops/s\nIteration   4: 97097857.201 ops/s\nIteration   5: 94517775.269 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level3\":\n  96752178.779 ±(99.9%) 4839327.658 ops/s [Average]\n  (min, avg, max) = (94517775.269, 96752178.779, 97486071.647), stdev = 1256758.025\n  CI (99.9%): [91912851.122, 101591506.437] (assumes normal distribution)\n\n\n# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53688:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level4\n\n# Run progress: 60.00% complete, ETA 00:03:21\n# Fork: 1 of 1\n# Warmup Iteration   1: 92047944.166 ops/s\n# Warmup Iteration   2: 89678443.566 ops/s\n# Warmup Iteration   3: 89812773.142 ops/s\n# Warmup Iteration   4: 88930887.557 ops/s\n# Warmup Iteration   5: 85792676.395 ops/s\nIteration   1: 89347289.220 ops/s\nIteration   2: 89191963.589 ops/s\nIteration   3: 83800965.269 ops/s\nIteration   4: 89119847.919 ops/s\nIteration   5: 89735595.781 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level4\":\n  88239132.356 ±(99.9%) 9597356.077 ops/s [Average]\n  (min, avg, max) = (83800965.269, 88239132.356, 89735595.781), stdev = 2492402.896\n  CI (99.9%): [78641776.279, 97836488.433] (assumes normal distribution)\n\n\n# JMH version: 1.23\n# VM version: JDK 1.8.0_221, Java HotSpot(TM) 64-Bit Server VM, 25.221-b11\n# VM invoker: C:\\Program Files\\Java\\jdk1.8.0_221\\jre\\bin\\java.exe\n# VM options: -javaagent:E:\\app\\IntelliJ IDEA 2019.1.4\\lib\\idea_rt.jar=53688:E:\\app\\IntelliJ IDEA 2019.1.4\\bin -Dfile.encoding=UTF-8\n# Warmup: 5 iterations, 10 s each\n# Measurement: 5 iterations, 10 s each\n# Timeout: 10 min per iteration\n# Threads: 1 thread, will synchronize iterations\n# Benchmark mode: Throughput, ops/time\n# Benchmark: tester.MapBenchmark.measure_level5\n\n# Run progress: 80.00% complete, ETA 00:01:40\n# Fork: 1 of 1\n# Warmup Iteration   1: 54077395.641 ops/s\n# Warmup Iteration   2: 59732722.907 ops/s\n# Warmup Iteration   3: 53583150.778 ops/s\n# Warmup Iteration   4: 59899100.161 ops/s\n# Warmup Iteration   5: 60709074.795 ops/s\nIteration   1: 60754432.284 ops/s\nIteration   2: 51357719.856 ops/s\nIteration   3: 55849596.896 ops/s\nIteration   4: 54854535.391 ops/s\nIteration   5: 56884120.457 ops/s\n\n\nResult \"tester.MapBenchmark.measure_level5\":\n  55940080.977 ±(99.9%) 13094145.548 ops/s [Average]\n  (min, avg, max) = (51357719.856, 55940080.977, 60754432.284), stdev = 3400508.017\n  CI (99.9%): [42845935.429, 69034226.525] (assumes normal distribution)\n\n\n# Run complete. Total time: 00:08:23\n\nREMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on\nwhy the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial\nexperiments, perform baseline and negative tests that provide experimental control, make sure\nthe benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.\nDo not assume the numbers tell you what you want them to tell.\n\nBenchmark                     Mode  Cnt          Score          Error  Units\nMapBenchmark.measure_level1  thrpt    5  122338131.327 ±  9689798.828  ops/s\nMapBenchmark.measure_level2  thrpt    5  102039334.216 ±  2403155.914  ops/s\nMapBenchmark.measure_level3  thrpt    5   96752178.779 ±  4839327.658  ops/s\nMapBenchmark.measure_level4  thrpt    5   88239132.356 ±  9597356.077  ops/s\nMapBenchmark.measure_level5  thrpt    5   55940080.977 ± 13094145.548  ops/s\n\nProcess finished with exit code 0\n\u003c/code\u003e\u003c/pre\u003e\n\u003ch1\u003e参考资料\u003c/h1\u003e\n\u003cul\u003e\n\u003cli\u003eOracle, Class HashMap, \u003cem\u003eOracle Java Documentation\u003c/em\u003e. \u003ca href=\"https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003eYikun, Java-HashMap工作原理及实现, \u003cem\u003eYikun’s\u003c/em\u003e Blog, 2015. \u003ca href=\"https://yikun.github.io/2015/04/01/Java-HashMap%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e美团, Java 8系列之重新认识HashMap, \u003cem\u003e美团技术团队\u003c/em\u003e, 2015. \u003ca href=\"https://tech.meituan.com/2016/06/24/java-hashmap.html\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003eAniket Thakur, “Why HashMap insert new Node on index (n - 1) \u0026#x26; hash?”, \u003cem\u003eStack Overflow\u003c/em\u003e, 2017. \u003ca href=\"https://stackoverflow.com/a/44615382\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003eJul, \"Why return (h = key.hashCode()) ^ (h \u003e\u003e\u003e 16) other than key.hashcode?\", \u003cem\u003eStack Overflow\u003c/em\u003e, 2017. \u003ca href=\"https://stackoverflow.com/a/45140621\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003eAndy Turner, \"HashMap.tableSizeFor(…). How does this code round up to the next power of 2?\", \u003cem\u003eStack Overflow\u003c/em\u003e, 2018. \u003ca href=\"https://stackoverflow.com/a/51121765\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003eMincong Huang, learning-hashmap, \u003cem\u003eMincong Huang’s\u003c/em\u003e Blog, 2019. \u003ca href=\"https://mincong.io/2018/04/08/learning-hashmap/\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e飞污熊博客, Java微基准测试框架JMH, \u003cem\u003e飞污熊博客’s\u003c/em\u003e Blog, 2018. \u003ca href=\"https://www.xncoding.com/2018/01/07/java/jmh.html\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003eJakob Jenkov, JMH - Java Microbenchmark Harness, \u003cem\u003eJakob Jenkov's\u003c/em\u003e Blog, 2015. \u003ca href=\"http://tutorials.jenkov.com/java-performance/jmh.html\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003ejhm samples. \u003ca href=\"https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/\"\u003e📄\u003c/a\u003e\u003c/li\u003e\n\u003c/ul\u003e\n"}},"__N_SSG":true},"page":"/posts/[id]","query":{"id":"java-hash-map"},"buildId":"pGGBVmnLCT4XKOq0_CdKw","nextExport":false,"isFallback":false,"gsp":true,"head":[["meta",{"name":"viewport","content":"width=device-width"}],["meta",{"charSet":"utf-8"}],["title",{"children":"HashMap原理简析 - kiyak"}]]}</script><script nomodule="" src="/_next/static/chunks/polyfills-577caaa53936537aa4bf.js"></script><script src="/_next/static/chunks/main-9e14e9299d96e4a63fc3.js" async=""></script><script src="/_next/static/chunks/webpack-d7b2fb72fb7257504a38.js" async=""></script><script src="/_next/static/chunks/7af46002.7b37a38a8911fc5fb44b.js" async=""></script><script src="/_next/static/chunks/7658eb265201359a3f9e5f36a5d51cd74c781bde.716fe7386381de1064b0.js" async=""></script><script src="/_next/static/chunks/189f372a1a09b44bc5ee9e8694cd22967121ee9f.c1299753f6cf9d140411.js" async=""></script><script src="/_next/static/chunks/189f372a1a09b44bc5ee9e8694cd22967121ee9f_CSS.8f6f5b95f5e92b2c9bcd.js" async=""></script><script src="/_next/static/chunks/712a84a73acf62bf26290958298b2566586e7dd8_CSS.bca366718f045dbe8189.js" async=""></script><script src="/_next/static/chunks/93b2fd6e127d30331b61cfd2f04634ca05024a66_CSS.19830e50427f38e47434.js" async=""></script><script src="/_next/static/chunks/608d37238a334f4b11fe8d600201fe11b7a5b804.cbf6dda1e316f22fd86b.js" async=""></script><script src="/_next/static/chunks/d111f78934af154ae2b78def2cd48076645f6685.b41fcd8fbee89b9b32b6.js" async=""></script><script src="/_next/static/chunks/e70a2e0268e458e8b9abc18785a5727107407f8e.3f5af21948b0ca66102f.js" async=""></script><script src="/_next/static/chunks/styles.97cfe1edb1cdc49560a5.js" async=""></script><script src="/_next/static/chunks/pages/_app-307ac3bfcacd4d7be388.js" async=""></script><script src="/_next/static/chunks/8a4b9c7b11a9228b425c7a73cade1154f2ca061e.4a1b4be1a94f0b02499c.js" async=""></script><script src="/_next/static/chunks/8a4b9c7b11a9228b425c7a73cade1154f2ca061e_CSS.4d62413f4da81be1e932.js" async=""></script><script src="/_next/static/chunks/pages/posts/%5Bid%5D-c6ffa8c08f20ac6ea580.js" async=""></script><script src="/_next/static/pGGBVmnLCT4XKOq0_CdKw/_buildManifest.js" async=""></script><script src="/_next/static/pGGBVmnLCT4XKOq0_CdKw/_ssgManifest.js" async=""></script></body></html>
